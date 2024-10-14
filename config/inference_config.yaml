@@ -13,4 +13,4 @@ save_path_prefix: test/results
 seed: 42
 scale: 1
 strength: 1
-display_focused_embeds: True
+display_focused_embeds: False

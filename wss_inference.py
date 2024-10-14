@@ -85,7 +85,9 @@ def main(config, args):
     for scene_dir in tqdm(scene_dirs):
         print(f"Processing {scene_dir}")
         scene_id = scene_dir.split("/")[-1]
-        image = Image.open(f"{args.gt_path}/{scene_id}/scene.png").convert("RGB").resize((512, 512))
+        image = Image.open(f"{args.gt_path}/{scene_id}/scene.png").convert("RGB")
+        w, h = image.size
+        image = image.resize((512, 512))
         mask = Image.open(f"{args.exp_path}/{scene_id}/{args.mask_type}.png").convert("L").resize((512, 512))
         
         mask_tensor = transforms.ToTensor()(mask)
@@ -98,6 +100,7 @@ def main(config, args):
             prompt=[""], scale=config.scale, seed=config.seed,
             pil_image=image_pil, alpha=mask_pil, strength=config.strength, latents=latents
         )[0]
+        final_image = final_image.resize((w, h))
         
         if config.display_focused_embeds:
             full_mask = Image.new('L', (mask_pil[0].width, mask_pil[0].height), 255)
@@ -126,7 +129,6 @@ def main(config, args):
             final_image = generate_focused_embeddings_grid(
                 image_pil[0], mask_pil[0], fg_image, bg_image, proj_image, final_image
             )
-        
         final_image.save(f"{scene_dir}/{args.export_name}.png")
 
 
