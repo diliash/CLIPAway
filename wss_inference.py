@@ -86,6 +86,10 @@ def main(config, args):
         print(f"Processing {scene_dir}")
         scene_id = scene_dir.split("/")[-1]
         image = Image.open(f"{args.gt_path}/{scene_id}/scene.png").convert("RGB")
+        # Copy and store alpha channel
+        cv2_image = cv2.imread(f"{args.gt_path}/{scene_id}/scene.png", cv2.IMREAD_UNCHANGED)
+        alpha_channel = cv2_image[:, :, 3]
+        
         w, h = image.size
         image = image.resize((512, 512))
         mask = Image.open(f"{args.exp_path}/{scene_id}/{args.mask_type}.png").convert("L").resize((512, 512))
@@ -129,6 +133,10 @@ def main(config, args):
             final_image = generate_focused_embeddings_grid(
                 image_pil[0], mask_pil[0], fg_image, bg_image, proj_image, final_image
             )
+        # Add alpha channel back
+        final_image = np.array(final_image)
+        final_image = np.dstack((final_image, alpha_channel))
+        final_image = Image.fromarray(final_image)
         final_image.save(f"{scene_dir}/{args.export_name}.png")
 
 
